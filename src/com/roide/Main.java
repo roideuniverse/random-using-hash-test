@@ -15,7 +15,7 @@ public class Main {
 
     public static void main(String[] args) {
         // write your code here
-        for(int i=5; i<=15; i=i+5) {
+        for(int i=5; i<=50; i=i+5) {
             Main main = new Main();
             System.out.print("i=" + (500 * i) + "\t");
             //main.testModifiedBinarySearch();
@@ -32,8 +32,8 @@ public class Main {
         }
 
         for (int i = 0; i < 10; i++) {
-            for (int j = 0; j < 1000; j++) {
-                for (int k = 0; k < 1; k++) {
+            for (int j = 0; j < 100; j++) {
+                for (int k = 0; k < 100; k++) {
                     String genKey = genHash(UUID.randomUUID().toString());
                     String closestKey = closestKey(genKey);
                     mKeySelectionCountMap.put(closestKey, mKeySelectionCountMap.get(closestKey) + 1);
@@ -44,15 +44,22 @@ public class Main {
 
     private void printSamplingResult() {
         int total = 0;
-        int max = Integer.MIN_VALUE, min = Integer.MAX_VALUE;
+
+        for(Integer val : mKeySelectionCountMap.values()) {
+            total += val;
+        }
+
+        double expFreq = total / mKeySelectionCountMap.size();
+        double totalDev = 0;
         for (String key : mKeySelectionCountMap.keySet()) {
             Integer value = mKeySelectionCountMap.get(key);
-            if (value > max) max = value;
-            if (value < min) min = value;
-            total += value;
-            //System.out.println("key:" + key + "\t\tval=" + mKeySelectionCountMap.get(key));
+            //System.out.println("key=" + key + "::val=" + value + "::dev=" + Math.abs(expFreq - value));
+            totalDev += Math.abs(expFreq - value)/expFreq;
         }
-        System.out.println("Delta:" + ((float)(max - min)/(total/100)) + "\t\ttotal=" + total);
+        double avgDeviation = totalDev / mKeySelectionCountMap.size();
+        //System.out.println("total=" + total + "\texpFreq=" + expFreq + "\ttotalDev=" + totalDev + "\t:avgDeviation=" + avgDeviation);
+        //System.out.println("Quality " + (1-avgDeviation) + " %");
+        System.out.println(String.format("Quality: %.2f", (1-avgDeviation)));
     }
 
     private String closestKey(String key) {
@@ -157,7 +164,7 @@ public class Main {
 
     private static String genHash(String key) {
         try {
-            MessageDigest md = MessageDigest.getInstance("SHA-1");
+            MessageDigest md = MessageDigest.getInstance("MD5");
             md.reset();
             md.update(key.getBytes(StandardCharsets.UTF_8));
             return toHex(md.digest());
